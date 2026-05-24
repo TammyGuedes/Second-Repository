@@ -4,13 +4,15 @@ import shutil
 user_profile = os.environ['USERPROFILE']
 
 source_folder = os.path.join(user_profile, 'Downloads')
-destination_folder = os.path.join(user_profile, 'Documentos')
+destination_folder = os.path.join(user_profile, 'Documents')
 
 categories = { 
-    'Images':['.png','.jpg','.gif'],
-    'Files': ['.pdf', '.doc', '.xlsx', '.ods', '.xml', '.txt'], 
-    'Installers': ['.exe', '.msi'],
-    'Others': []
+    'Images':['.png','.jpg','.gif', '.webp', '.jpeg'],
+    'Videos': ['.mp4', '.mkv', '.avi', '.mov'],
+    'Audio': ['.mp3', '.wav', '.flac', '.m4a'],
+    'Files': ['.pdf', '.doc', '.xlsx', '.ods', '.xml', '.txt', '.docx', '.pptx'], 
+    'Installers': ['.exe', '.msi', '.appx', '.msix'],
+    'Compressed': ['.zip', '.rar', '.7z', '.tar.gz']
              }
 
 for category in categories:
@@ -26,10 +28,21 @@ for filename in os.listdir(source_folder):
     _, file_extension = os.path.splitext(filename)
     file_extension = file_extension.lower()
 
-    chosen_category = 'Others'
     for category, extensions in categories.items():
         if file_extension in extensions:
             dest_file_path = os.path.join(destination_folder, category, filename)
+
+            if os.path.exists(dest_file_path):
+                name, ext = os.path.splitext(filename)
+                counter = 1
+
+                while os.path.exists(dest_file_path):
+                    new_filename = f'{name}_{counter}{ext}'
+                    dest_file_path = os.path.join(destination_folder, category, new_filename)
+                    counter += 1
+
+                filename = os.path.basename(dest_file_path)
+
             shutil.move(file_path, dest_file_path)
             print(f'Moved: {filename} -> {category}')
             break
