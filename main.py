@@ -2,7 +2,6 @@ import os
 import shutil
 
 user_profile = os.environ['USERPROFILE']
-
 source_folder = os.path.join(user_profile, 'Downloads')
 destination_folder = os.path.join(user_profile, 'Documents')
 
@@ -15,25 +14,40 @@ categories = {
     'Compressed': ['.zip', '.rar', '.7z', '.tar.gz']
              }
 
+
+
 for category in categories:
     dest_path = os.path.join(destination_folder, category)
     os.makedirs(dest_path, exist_ok=True)
 
+
+
 for filename in os.listdir(source_folder):
     file_path = os.path.join(source_folder, filename)
 
-    if os.path.isdir(file_path) or filename in categories:
+    if os.path.isdir(file_path):
         continue
+    if filename.lower().endswith('.tar.gz'):
+        file_extension = '.tar.gz'
+    else:
+        _, file_extension = os.path.splitext(filename)
+        file_extension = file_extension.lower()
 
-    _, file_extension = os.path.splitext(filename)
-    file_extension = file_extension.lower()
+
 
     for category, extensions in categories.items():
         if file_extension in extensions:
             dest_file_path = os.path.join(destination_folder, category, filename)
 
             if os.path.exists(dest_file_path):
-                name, ext = os.path.splitext(filename)
+                
+                if filename.lower().endswith('.tar.gz'):
+                    name = filename[:-7]
+                    ext = '.tar.gz'
+                else:
+                    name, ext = os.path.splitext(filename)
+
+
                 counter = 1
 
                 while os.path.exists(dest_file_path):
@@ -41,8 +55,16 @@ for filename in os.listdir(source_folder):
                     dest_file_path = os.path.join(destination_folder, category, new_filename)
                     counter += 1
 
-                filename = os.path.basename(dest_file_path)
+                filename = new_filename
 
-            shutil.move(file_path, dest_file_path)
-            print(f'Moved: {filename} -> {category}')
-            break
+                try:
+                    shutil.move(file_path, dest_file_path)
+                    print(f'Moved: {filename} -> {category}')
+
+                except PermissionError:
+                    print(f'Error! File: {filename} is currently being used by another application.')  
+
+                except Exception as e:
+                    print(f'Unexpected error while moving {filename}: {e}')  
+                    
+                break
